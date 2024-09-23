@@ -1,0 +1,53 @@
+<?xml version="1.0" encoding="UTF-8"?>
+
+<mule xmlns:ee="http://www.mulesoft.org/schema/mule/ee/core" xmlns:http="http://www.mulesoft.org/schema/mule/http"
+	xmlns="http://www.mulesoft.org/schema/mule/core"
+	xmlns:doc="http://www.mulesoft.org/schema/mule/documentation" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xsi:schemaLocation="http://www.mulesoft.org/schema/mule/core http://www.mulesoft.org/schema/mule/core/current/mule.xsd
+http://www.mulesoft.org/schema/mule/http http://www.mulesoft.org/schema/mule/http/current/mule-http.xsd
+http://www.mulesoft.org/schema/mule/ee/core http://www.mulesoft.org/schema/mule/ee/core/current/mule-ee.xsd">
+	<flow name="mainFlow" doc:id="51e3ad4f-2cb0-45d7-8823-2ee0fc577208" >
+		<http:listener doc:name="Listener" doc:id="83b986b7-fb77-4192-a179-11729aaedbc7" config-ref="HTTP_Listener_config" path="/users"/>
+		<choice doc:name="Choice" doc:id="d2b38913-52de-4960-887c-eb8667a2b860" >
+			<when expression="#[attributes.method=='GET' and attributes.queryParams.id==null]">
+				<flow-ref doc:name="getAllUsers" doc:id="e6813f0f-9c99-4045-b17b-6af0e087c6fe" name="getAllUsers"/>
+			</when>
+			<when expression="#[attributes.method=='GET' and attributes.queryParams.id != null]">
+				<set-variable value="#[attributes.queryParams.id]" doc:name="userId" doc:id="3ec33604-92ab-40b0-8140-960724135dff" variableName="userId"/>
+				<flow-ref doc:name="getUsersByID" doc:id="93e1e8f3-43a2-41a8-9b8c-a39685a28ac6" name="getUsersByID"/>
+			</when>
+			<otherwise>
+				<set-payload value="Invalid Request" doc:name="Set Payload" doc:id="fbab0504-6b2d-424d-9400-dd95a5a3227f" />
+			</otherwise>
+		</choice>
+	</flow>
+	<flow name="getUsersByID" doc:id="cab1741c-6a5c-4d0f-b3bf-de987887fb5a" >
+		<http:request method="GET" doc:name="Request" doc:id="987de29d-cb27-4523-9e2a-b6c218685b33" config-ref="HTTP_Request_configuration" path="/posts/{id}">
+			<http:uri-params ><![CDATA[#[{
+	id:vars.userId as String
+}]]]></http:uri-params>
+		</http:request>
+		<ee:transform doc:name="Transform Message" doc:id="60abdece-5003-4cde-9089-ea63d179276c" >
+			<ee:message >
+				<ee:set-payload ><![CDATA[%dw 2.0
+output application/xml
+---
+users:{
+	(payload)
+}]]></ee:set-payload>
+			</ee:message>
+		</ee:transform>
+	</flow>
+	<flow name="getAllUsers" doc:id="e7ff8a91-cc9c-4ec8-9da3-49aca572f517" >
+		<http:request method="GET" doc:name="getAllUsers" doc:id="00b283c4-a310-44e8-919f-b59e8b1c9d77" config-ref="HTTP_Request_configuration" path="/posts"/>
+		<ee:transform doc:name="Transform Message" doc:id="e4535f22-2c0c-47e2-87c9-50caad4931b1" >
+			<ee:message >
+				<ee:set-payload ><![CDATA[%dw 2.0
+output application/xml
+---
+users:{
+	(payload)
+}]]></ee:set-payload>
+			</ee:message>
+		</ee:transform>
+	</flow>
+</mule>

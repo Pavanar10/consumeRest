@@ -1,0 +1,4 @@
+%dw 2.0
+
+type auto_cab1741c_6a5c_4d0f_b3bf_de987887fb5a_Output_Payload = {| users: {|  |} |}
+
